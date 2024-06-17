@@ -2,6 +2,7 @@ import os
 import tensorflow as tf
 import numpy as np
 import glob
+from tensorflow.keras.losses import Huber
 
 
 class NonZeroMeanSquaredError(tf.keras.losses.Loss):
@@ -103,9 +104,6 @@ all_paths = np.sort(glob.glob('../FLIPINN_data/*/grid.npy'))
 #preparing data
 
 y_data = np.array([np.load(file)[0] for file in all_paths])
-#scale up
-#y_data *=10
-
 
 #building model
 model = build_3d_unet(input_shape, num_classes)
@@ -119,7 +117,8 @@ save = tf.keras.callbacks.ModelCheckpoint(
     monitor = 'val_loss')
 
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
-              loss=NonZeroMeanSquaredError())
+              loss = Huber(delta=0.01)
+)
 
 
 
